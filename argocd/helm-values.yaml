@@ -1,0 +1,14 @@
+# ArgoCD installation via Helm (managed by Terraform)
+# This file documents the Helm values used by the Terraform helm_release resource.
+# See terraform/argocd.tf for the actual installation.
+
+server:
+  service:
+    type: LoadBalancer
+
+  ingress:
+    enabled: false
+
+notifications:
+  enabled: true
+  argocdUrl: "https://argocd.example.com"

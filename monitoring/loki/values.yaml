@@ -1,0 +1,30 @@
+# Loki stack Helm values
+# Deployed via Terraform (terraform/monitoring.tf)
+
+loki:
+  enabled: true
+  persistence:
+    enabled: true
+    size: 10Gi
+  config:
+    limits_config:
+      retention_period: 168h  # 7 days
+    table_manager:
+      retention_deletes_enabled: true
+      retention_period: 168h
+
+promtail:
+  enabled: true
+  config:
+    clients:
+      - url: http://loki:3100/loki/api/v1/push
+    snippets:
+      pipelineStages:
+        - docker: {}
+        - json:
+            expressions:
+              level: level
+              message: message
+              timestamp: timestamp
+        - labels:
+            level:

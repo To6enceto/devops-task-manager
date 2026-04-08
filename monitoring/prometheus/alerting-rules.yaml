@@ -1,0 +1,59 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: task-manager-alerts
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: task-manager.rules
+      rules:
+        - alert: HighErrorRate
+          expr: |
+            (
+              sum(rate(http_requests_total{status=~"5..", namespace="task-manager"}[5m]))
+              /
+              sum(rate(http_requests_total{namespace="task-manager"}[5m]))
+            ) > 0.05
+          for: 5m
+          labels:
+            severity: critical
+            namespace: task-manager
+          annotations:
+            summary: "High error rate in Task Manager"
+            description: "More than 5% of requests are returning 5xx errors for the last 5 minutes."
+
+        - alert: HighLatency
+          expr: |
+            histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{namespace="task-manager"}[5m])) by (le))
+            > 2
+          for: 5m
+          labels:
+            severity: warning
+            namespace: task-manager
+          annotations:
+            summary: "High latency in Task Manager"
+            description: "99th percentile latency is above 2 seconds for the last 5 minutes."
+
+        - alert: PodCrashLooping
+          expr: |
+            increase(kube_pod_container_status_restarts_total{namespace="task-manager"}[15m]) > 3
+          for: 5m
+          labels:
+            severity: critical
+            namespace: task-manager
+          annotations:
+            summary: "Pod crash looping in Task Manager"
+            description: "Pod {{ $labels.pod }} has restarted more than 3 times in the last 15 minutes."
+
+        - alert: PodNotReady
+          expr: |
+            kube_pod_status_ready{namespace="task-manager", condition="true"} == 0
+          for: 5m
+          labels:
+            severity: warning
+            namespace: task-manager
+          annotations:
+            summary: "Pod not ready in Task Manager"
+            description: "Pod {{ $labels.pod }} has been in a not-ready state for more than 5 minutes."

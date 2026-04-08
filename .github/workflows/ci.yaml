@@ -1,0 +1,155 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/task-manager
+
+jobs:
+  lint-and-security:
+    name: Lint & Security
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pre-commit
+        run: pip install pre-commit
+
+      - name: Run pre-commit hooks
+        run: pre-commit run --all-files
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install -r app/requirements.txt -r app/requirements-dev.txt
+
+      - name: Run tests with coverage
+        run: |
+          coverage run -m pytest app/tests/ -v
+          coverage report --fail-under=70
+          coverage xml
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+
+  build-and-push:
+    name: Build & Push Docker Image
+    needs: [lint-and-security, test]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tags }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_IMAGE }}
+          tags: |
+            type=sha,prefix=
+            type=raw,value=latest
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  update-manifests:
+    name: Update K8s Manifests
+    needs: [build-and-push]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update image tag in deployment
+        run: |
+          IMAGE_TAG="${{ github.sha }}"
+          SHORT_SHA="${IMAGE_TAG:0:7}"
+          cd k8s/base
+          sed -i "s|image: .*task-manager:.*|image: ${{ env.DOCKER_IMAGE }}:sha-${SHORT_SHA}|" deployment.yaml
+          cat deployment.yaml
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add k8s/base/deployment.yaml
+          git diff --staged --quiet || git commit -m "ci: update image tag to sha-${GITHUB_SHA:0:7}"
+          git push
+
+  notify:
+    name: Discord Notification
+    needs: [lint-and-security, test, build-and-push, update-manifests]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Determine status
+        id: status
+        run: |
+          if [[ "${{ needs.lint-and-security.result }}" == "failure" || \
+                "${{ needs.test.result }}" == "failure" || \
+                "${{ needs.build-and-push.result }}" == "failure" || \
+                "${{ needs.update-manifests.result }}" == "failure" ]]; then
+            echo "status=❌ FAILED" >> $GITHUB_OUTPUT
+            echo "color=16711680" >> $GITHUB_OUTPUT
+          else
+            echo "status=✅ SUCCESS" >> $GITHUB_OUTPUT
+            echo "color=65280" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send Discord notification
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          curl -H "Content-Type: application/json" \
+            -X POST \
+            -d '{
+              "embeds": [{
+                "title": "CI Pipeline ${{ steps.status.outputs.status }}",
+                "description": "**Repo:** ${{ github.repository }}\n**Branch:** ${{ github.ref_name }}\n**Commit:** `${{ github.sha }}`\n**Author:** ${{ github.actor }}",
+                "color": ${{ steps.status.outputs.color }},
+                "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+                "footer": {"text": "GitHub Actions CI"},
+                "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"
+              }]
+            }' \
+            "$DISCORD_WEBHOOK"
