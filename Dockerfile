@@ -20,7 +20,7 @@ COPY backend/package*.json ./
 RUN npm ci --omit=dev
 
 COPY backend/ .
-COPY --from=frontend-build /app/frontend/dist ./public
+COPY --from=frontend-build /app/backend/public ./public
 
 RUN chown -R appuser:appgroup /app
 USER appuser
