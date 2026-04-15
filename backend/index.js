@@ -81,8 +81,7 @@ app.get("*", (req, res) => {
 });
 
 // ── Error handler ────────────────────────────────────────────────────────────
-// eslint-disable-next-line no-unused-vars
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
   console.error(JSON.stringify({ level: "error", message: err.message, path: req.path }));
   res.status(500).json({ detail: "Internal server error" });
 });
@@ -103,9 +102,13 @@ process.on("SIGTERM", () => {
   });
 });
 
-start().catch((err) => {
-  console.error(JSON.stringify({ level: "error", message: err.message }));
-  process.exit(1);
-});
+if (process.env.NODE_ENV !== "test") {
+  start().catch((err) => {
+    console.error(JSON.stringify({ level: "error", message: err.message }));
+    process.exit(1);
+  });
+}
+
+module.exports = app;
 
 module.exports = app; // for tests

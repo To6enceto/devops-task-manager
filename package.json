@@ -1,0 +1,13 @@
+{
+  "name": "devops-task-manager",
+  "private": true,
+  "devDependencies": {
+    "@eslint/js": "^9.13.0",
+    "eslint": "^9.13.0",
+    "eslint-plugin-react": "^7.37.0",
+    "globals": "^15.11.0"
+  },
+  "scripts": {
+    "lint": "eslint --max-warnings=0 backend/**/*.js frontend/src/**/*.{js,jsx}"
+  }
+}

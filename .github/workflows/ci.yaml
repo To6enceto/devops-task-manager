@@ -20,16 +20,13 @@ jobs:
         with:
           node-version: "20"
           cache: npm
-          cache-dependency-path: backend/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install pre-commit
         run: pip install pre-commit
 
-      - name: Install backend deps (for ESLint)
-        run: cd backend && npm ci
-
-      - name: Install ESLint deps at root
-        run: npm install --save-dev eslint@9.13.0 @eslint/js@9.13.0 globals@15.11.0
+      - name: Install root ESLint deps
+        run: npm ci
 
       - name: Run pre-commit hooks
         run: pre-commit run --all-files

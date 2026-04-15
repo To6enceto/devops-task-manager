@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "jest --coverage --coverageThreshold='{\"global\":{\"lines\":70}}'"
+    "test": "NODE_ENV=test jest --coverage --forceExit --coverageThreshold='{\"global\":{\"lines\":70}}'"
   },
   "dependencies": {
     "cors": "^2.8.5",
