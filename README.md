@@ -83,7 +83,7 @@ flowchart LR
 
 - Docker & Docker Compose
 - Python 3.12+
-- `gcloud` CLI replaced by `doctl` (DigitalOcean CLI)
+- `doctl` (DigitalOcean CLI)
 - Terraform >= 1.7
 - `kubectl`
 - `kubeseal` CLI (for Sealed Secrets)
@@ -129,18 +129,13 @@ pytest app/tests/ -v
 # 1. Install doctl and authenticate
 doctl auth init  # paste your DigitalOcean API token
 
-# 2. Create a DigitalOcean Space for Terraform state
-doctl spaces create devops-task-manager-tf-state --region ams3
-
-# 3. Configure Terraform
+# 2. Configure Terraform
 cd terraform
 cp terraform.tfvars.example terraform.tfvars
 # Edit terraform.tfvars — paste your DigitalOcean API token
 
-# 4. Deploy infrastructure
-terraform init \
-  -backend-config="access_key=<SPACES_ACCESS_KEY>" \
-  -backend-config="secret_key=<SPACES_SECRET_KEY>"
+# 3. Deploy infrastructure
+terraform init
 terraform plan
 terraform apply
 
@@ -184,18 +179,18 @@ Configure these secrets in your GitHub repository settings:
 
 | Technology            | Version   | Purpose                        |
 |-----------------------|-----------|--------------------------------|
-| Python                | 3.12      | Application runtime            |
+| Python                | 3.12+     | Application runtime            |
 | FastAPI               | 0.115.6   | Web framework (async)          |
 | PostgreSQL            | 16        | Database                       |
 | SQLAlchemy            | 2.0.36    | ORM (async)                    |
 | Docker                | 24+       | Containerization               |
-| Kubernetes (DOKS)     | 1.31+     | Container orchestration        |
+| Kubernetes (DOKS)     | 1.35+     | Container orchestration        |
 | Terraform             | >= 1.7    | Infrastructure as Code (DOKS)  |
 | ArgoCD                | 2.10+     | GitOps Continuous Deployment   |
 | GitHub Actions        | v4        | CI Pipeline                    |
 | Prometheus            | 2.50+     | Metrics collection             |
 | Grafana               | 10+       | Dashboards & visualization     |
-| Loki                  | 2.9+      | Log aggregation                |
+| Loki                  | 3.0+      | Log aggregation                |
 | Sealed Secrets        | 0.26+     | Kubernetes secrets in Git      |
 | pre-commit            | 3.6+      | Git hooks framework            |
 | gitleaks              | 8.21+     | Secret scanning                |
@@ -217,14 +212,14 @@ devops-task-manager/
 │   │   └── test_tasks.py          #   Unit tests for all endpoints
 │   ├── requirements.txt           #   Production dependencies
 │   └── requirements-dev.txt       #   Development/test dependencies
-├── terraform/                     # Infrastructure as Code (GKE)
-│   ├── main.tf                    #   Terraform settings & backend
-│   ├── provider.tf                #   Google Cloud provider
+├── terraform/                     # Infrastructure as Code (DOKS)
+│   ├── main.tf                    #   Terraform settings & local backend
+│   ├── provider.tf                #   DigitalOcean provider
 │   ├── variables.tf               #   Input variables
 │   ├── outputs.tf                 #   Output values
 │   ├── network.tf                 #   VPC & subnet
-│   ├── gke.tf                     #   GKE cluster & node pool
-│   ├── helm-releases.tf           #   ArgoCD, Sealed Secrets, Ingress NGINX (DOKS k8s provider)
+│   ├── doks.tf                    #   DOKS cluster & node pool
+│   ├── helm-releases.tf           #   ArgoCD, Sealed Secrets, Ingress NGINX
 │   ├── monitoring.tf              #   Prometheus stack & Loki (Helm releases)
 │   └── terraform.tfvars.example   #   Example variable values (do_token, region, node_size)
 ├── k8s/                           # Kubernetes manifests (Kustomize)
@@ -294,7 +289,7 @@ Triggered on every push/PR to `main`:
 
 ## Secrets Management
 
-- **CI/CD secrets**: GitHub Secrets (Docker Hub token, Discord webhook, GCP SA key)
+- **CI/CD secrets**: GitHub Secrets (Docker Hub token, Discord webhook, DigitalOcean token)
 - **Kubernetes secrets**: Bitnami Sealed Secrets (encrypted in Git, decrypted in cluster)
 - **No plaintext secrets in the repository** — enforced by gitleaks pre-commit hook
 
