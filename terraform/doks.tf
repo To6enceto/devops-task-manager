@@ -1,6 +1,6 @@
 # --- DOKS Cluster ---
 data "digitalocean_kubernetes_versions" "available" {
-  version_prefix = "${var.k8s_version}."
+  # No version_prefix — picks the latest available version from DigitalOcean
 }
 
 resource "digitalocean_kubernetes_cluster" "primary" {
