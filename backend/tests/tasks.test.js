@@ -47,8 +47,8 @@ jest.mock("../db", () => {
 const app = require("../index");
 
 describe("Health endpoints", () => {
-  it("GET / returns app info", async () => {
-    const res = await request(app).get("/");
+  it("GET /api/info returns app info", async () => {
+    const res = await request(app).get("/api/info");
     expect(res.status).toBe(200);
     expect(res.body.app).toBeDefined();
   });

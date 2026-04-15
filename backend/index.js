@@ -46,7 +46,8 @@ app.use((req, res, next) => {
 });
 
 // ── Health & info endpoints ──────────────────────────────────────────────────
-app.get("/", (req, res) => {
+// ── Health & info endpoints ──────────────────────────────────────────────────
+app.get("/api/info", (req, res) => {
   res.json({ app: APP_NAME, version: APP_VERSION, docs: "/api/tasks" });
 });
 

@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: task-manager
-          image: to6eto/task-manager:sha-dc0f740
+          image: to6eto/task-manager:v2-fixed
           ports:
             - containerPort: 8000
           env:
