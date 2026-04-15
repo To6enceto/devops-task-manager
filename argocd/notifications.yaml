@@ -47,12 +47,25 @@ data:
         method: POST
 
 ---
-apiVersion: v1
-kind: Secret
+# SECURITY NOTE: Do NOT commit a real webhook URL here.
+# Generate a SealedSecret with:
+#   kubectl create secret generic argocd-notifications-secret \
+#     --namespace argocd \
+#     --from-literal=discord-webhook-url=https://discord.com/api/webhooks/YOUR_ID/YOUR_TOKEN \
+#     --dry-run=client -o yaml | kubeseal --format yaml > argocd/notifications-secret.yaml
+#
+# The SealedSecret below contains only a placeholder — replace encryptedData with your sealed value.
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
 metadata:
   name: argocd-notifications-secret
   namespace: argocd
-type: Opaque
-stringData:
-  # Replace with your actual Discord webhook URL
-  discord-webhook-url: "https://discord.com/api/webhooks/PLACEHOLDER"
+spec:
+  encryptedData:
+    # Replace with output from kubeseal
+    discord-webhook-url: SEALED_VALUE_PLACEHOLDER==
+  template:
+    metadata:
+      name: argocd-notifications-secret
+      namespace: argocd
+    type: Opaque

@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+env/
+.eggs/
+
+# Tests & Coverage
+app/tests/
+htmlcov/
+.coverage
+coverage.xml
+.pytest_cache/
+*.db
+
+# Infrastructure & docs (not needed in image)
+terraform/
+k8s/
+argocd/
+monitoring/
+docs/
+alembic/
+alembic.ini
+
+# VCS
+.git/
+.gitignore
+
+# CI/CD
+.github/
+
+# Dev tooling
+.pre-commit-config.yaml
+.gitleaks.toml
+pyproject.toml
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Compose
+docker-compose*.yml
+
+# Secrets
+.env
+.env.*
+secrets/

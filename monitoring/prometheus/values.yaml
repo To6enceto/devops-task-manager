@@ -3,7 +3,16 @@
 
 grafana:
   enabled: true
-  adminPassword: "admin"  # Change in production, or use sealed secret
+  # adminPassword is intentionally absent — set via a Kubernetes Secret.
+  # Create it before deploying:
+  #   kubectl create secret generic grafana-admin-secret \
+  #     --namespace monitoring \
+  #     --from-literal=admin-password=<your-secure-password>
+  # Then reference it here:
+  admin:
+    existingSecret: grafana-admin-secret
+    userKey: admin-user
+    passwordKey: admin-password
   service:
     type: LoadBalancer
   dashboardProviders:

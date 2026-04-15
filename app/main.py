@@ -5,11 +5,11 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from prometheus_fastapi_instrumentator import Instrumentator
 from pythonjsonlogger import json as json_logger
-from sqlalchemy import func, select, text
+from sqlalchemy import text
 
 from app.config import settings
 from app.database import engine, get_db
-from app.models import Base, Task
+from app.models import Base
 from app.routers import tasks
 
 # --- Structured JSON Logging ---
