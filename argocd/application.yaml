@@ -11,7 +11,7 @@ spec:
   project: default
 
   source:
-    repoURL: https://github.com/<YOUR_USERNAME>/devops-task-manager.git
+    repoURL: https://github.com/To6enceto/devops-task-manager.git
     targetRevision: main
     path: k8s/overlays/prod
 
