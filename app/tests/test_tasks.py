@@ -46,7 +46,9 @@ async def test_get_task_not_found(client):
 async def test_update_task(client):
     create = await client.post("/tasks/", json={"title": "Old title"})
     task_id = create.json()["id"]
-    resp = await client.put(f"/tasks/{task_id}", json={"title": "New title", "status": "done"})
+    resp = await client.put(
+        f"/tasks/{task_id}", json={"title": "New title", "status": "done"}
+    )
     assert resp.status_code == 200
     assert resp.json()["title"] == "New title"
     assert resp.json()["status"] == "done"

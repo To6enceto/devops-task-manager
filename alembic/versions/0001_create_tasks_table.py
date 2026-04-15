@@ -5,6 +5,7 @@ Revises:
 Create Date: 2025-01-01 00:00:00.000000
 
 """
+
 from typing import Sequence, Union
 
 import sqlalchemy as sa
@@ -23,7 +24,9 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("title", sa.String(length=255), nullable=False),
         sa.Column("description", sa.Text(), nullable=True),
-        sa.Column("status", sa.String(length=50), nullable=False, server_default="pending"),
+        sa.Column(
+            "status", sa.String(length=50), nullable=False, server_default="pending"
+        ),
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),

@@ -28,6 +28,7 @@ repos:
     hooks:
       - id: bandit
         args: ["-r", "app/", "-x", "app/tests/", "-ll"]
+        pass_filenames: false
 
   - repo: https://github.com/gitleaks/gitleaks
     rev: v8.21.2
