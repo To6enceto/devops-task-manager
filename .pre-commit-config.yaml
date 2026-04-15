@@ -11,24 +11,16 @@ repos:
         args: ["--maxkb=500"]
       - id: detect-private-key
 
-  - repo: https://github.com/psf/black
-    rev: 24.10.0
+  - repo: https://github.com/pre-commit/mirrors-eslint
+    rev: v9.13.0
     hooks:
-      - id: black
-        language_version: python3
-
-  - repo: https://github.com/pycqa/flake8
-    rev: 7.1.1
-    hooks:
-      - id: flake8
-        args: ["--max-line-length=120", "--ignore=E203,W503"]
-
-  - repo: https://github.com/PyCQA/bandit
-    rev: 1.8.3
-    hooks:
-      - id: bandit
-        args: ["-r", "app/", "-x", "app/tests/", "-ll"]
-        pass_filenames: false
+      - id: eslint
+        files: \.(js|jsx)$
+        args: ["--max-warnings=0"]
+        additional_dependencies:
+          - eslint@9.13.0
+          - "@eslint/js@9.13.0"
+          - globals@15.11.0
 
   - repo: https://github.com/gitleaks/gitleaks
     rev: v8.21.2

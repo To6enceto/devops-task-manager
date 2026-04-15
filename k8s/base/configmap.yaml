@@ -8,4 +8,6 @@ data:
   DATABASE_PORT: "5432"
   DATABASE_NAME: "taskmanager"
   DATABASE_USER: "postgres"
-  LOG_LEVEL: "INFO"
+  NODE_ENV: "production"
+  PORT: "8000"
+  LOG_LEVEL: "info"

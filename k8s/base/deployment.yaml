@@ -25,13 +25,14 @@ spec:
           ports:
             - containerPort: 8000
           env:
-            - name: DATABASE_URL
-              value: "postgresql+asyncpg://$(DATABASE_USER):$(DATABASE_PASSWORD)@$(DATABASE_HOST):$(DATABASE_PORT)/$(DATABASE_NAME)"
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: task-manager-db-secret
+                  key: DATABASE_PASSWORD
           envFrom:
             - configMapRef:
                 name: task-manager-config
-            - secretRef:
-                name: task-manager-db-secret
           resources:
             requests:
               cpu: 100m

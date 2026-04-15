@@ -1,20 +1,14 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.egg-info/
-.venv/
-venv/
-env/
-.eggs/
+# Node modules (installed fresh in Docker)
+node_modules/
+backend/node_modules/
+frontend/node_modules/
 
-# Tests & Coverage
-app/tests/
-htmlcov/
-.coverage
-coverage.xml
-.pytest_cache/
-*.db
+# Build artifacts already copied by multi-stage
+backend/public/
+backend/coverage/
+
+# Tests
+backend/tests/
 
 # Infrastructure & docs (not needed in image)
 terraform/
@@ -22,8 +16,6 @@ k8s/
 argocd/
 monitoring/
 docs/
-alembic/
-alembic.ini
 
 # VCS
 .git/
@@ -35,7 +27,7 @@ alembic.ini
 # Dev tooling
 .pre-commit-config.yaml
 .gitleaks.toml
-pyproject.toml
+eslint.config.mjs
 
 # IDE
 .idea/
@@ -52,3 +44,11 @@ docker-compose*.yml
 .env
 .env.*
 secrets/
+
+# Python (legacy)
+__pycache__/
+*.py[cod]
+.venv/
+app/
+alembic/
+pyproject.toml

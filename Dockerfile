@@ -1,29 +1,33 @@
-# ---- Build Stage ----
-FROM python:3.12-slim AS builder
+# ---- Stage 1: Build React frontend ----
+FROM node:20-alpine AS frontend-build
 
-WORKDIR /build
-COPY app/requirements.txt .
-RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+WORKDIR /app/frontend
+COPY frontend/package*.json ./
+RUN npm ci
+COPY frontend/ .
+RUN npm run build
 
-# ---- Runtime Stage ----
-FROM python:3.12-slim
+# ---- Stage 2: Node.js backend runtime ----
+FROM node:20-alpine
 
 LABEL maintainer="devops-task-manager"
 
-RUN groupadd -r appuser && useradd -r -g appuser -d /app -s /sbin/nologin appuser
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
 WORKDIR /app
 
-COPY --from=builder /install /usr/local
-COPY app/ ./app/
+COPY backend/package*.json ./
+RUN npm ci --omit=dev
 
-RUN chown -R appuser:appuser /app
+COPY backend/ .
+COPY --from=frontend-build /app/frontend/dist ./public
 
+RUN chown -R appuser:appgroup /app
 USER appuser
 
 EXPOSE 8000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+    CMD wget -qO- http://localhost:8000/health || exit 1
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["node", "index.js"]
