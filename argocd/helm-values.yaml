@@ -11,4 +11,4 @@ server:
 
 notifications:
   enabled: true
-  argocdUrl: "https://argocd.example.com"
+  argocdUrl: "http://165.245.200.26"
