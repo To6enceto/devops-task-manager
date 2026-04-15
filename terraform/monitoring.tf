@@ -6,6 +6,7 @@ resource "helm_release" "kube_prometheus_stack" {
   version          = "65.8.1"
   namespace        = "monitoring"
   create_namespace = true
+  timeout          = 600
 
   values = [file("${path.module}/../monitoring/prometheus/values.yaml")]
 
@@ -20,6 +21,7 @@ resource "helm_release" "loki" {
   version          = "2.10.2"
   namespace        = "monitoring"
   create_namespace = false
+  timeout          = 600
 
   values = [file("${path.module}/../monitoring/loki/values.yaml")]
 
